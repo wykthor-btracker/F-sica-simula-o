@@ -37,12 +37,12 @@ class Car(Particle):
         self.show()
 
     def __str__(self):
-        return("pos ({},{}) vec ({},{})".format(self.x,self.y,self.vector.x))
+        return("pos ({},{}) vec ({},{})".format(self.x,self.y,self.vector.x,self.vector.y))
     def force(self,forceVector):
         self.vector += forceVector
 
     def move(self):
-        self.x,self.y = self+self.vector
+        self.x,self.y = self+(self.vector/self.vector.length())
         self.show()
 
     def show(self):
@@ -54,7 +54,8 @@ def game_loop():
     x_change = 0
     gameExit = False
     center = Particle(x,y)
-    car = Car(x+10,y+10,Vec2(0,0),gameDisplay,"racecar.png")
+    car = Car(x+100,y+100,Vec2(0,0),gameDisplay,"racecar.png")
+    print(center.x,car.x)
     while not gameExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -75,6 +76,7 @@ def game_loop():
         gameDisplay.fill(white)
         car.vector = car.aim(center)
         car.move()
+        print("({},{})".format(center.x-car.x,center.y-car.y))
         car.show()
 
         pygame.display.update()
