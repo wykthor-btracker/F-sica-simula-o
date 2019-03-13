@@ -53,7 +53,7 @@ class Car(Particle):
 
     def show(self):
         self.display.blit(self.img,(self.x,self.y))
-        # pygame.draw.line(self.display,black,(self.x,self.y),(self.x+self.vector.x,self.y+self.vector.y),5)
+        pygame.draw.line(self.display, black, (self.x, self.y),((self.x+self.vector.x),(self.y+self.vector.y)),5)
 
 def game_loop():
     x = (display_width * 0.5)
@@ -62,7 +62,7 @@ def game_loop():
     gameExit = False
     center = Car(x,y,gameDisplay,"racecar.png",[])
     print(center)
-    Orbital = Vec2(50,0)
+    Orbital = Vec2(100,0)
     car = Car(x,y-100,gameDisplay,"racecar.png",[Orbital])
     toCenter = car.aim(center)
     car.force(toCenter)
@@ -84,14 +84,12 @@ def game_loop():
         #             x_change = 0
         #
         # car.x += x_change
+        gameDisplay.fill(white)
         toCenter.x, toCenter.y = car.aim(center).x, car.aim(center).y
         Orbital.x, Orbital.y = Orbital.rotate(1)
         center.move()
         car.move()
-        # print(Orbital,toCenter)
-        # print(car.vectors,car.vector)
         car.show()
-        print(car.aim(center).length())
         pygame.display.update()
         clock.tick(60)
 
