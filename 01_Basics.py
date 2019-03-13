@@ -1,6 +1,5 @@
 import pygame
-import time
-import random
+from functools import reduce
 from pygame import Vector2 as Vec2
 pygame.init()
 
@@ -9,13 +8,13 @@ display_height = 800
 
 black = (0,0,0)
 white = (255,255,255)
-red = (255,0,0)
 
 car_width = 40
 
 gameDisplay = pygame.display.set_mode((display_width,display_height))
 clock = pygame.time.Clock()
 carImg = pygame.image.load('racecar.png')
+
 class Particle():
     def __init__(self,x,y):
         self.x = x
@@ -29,54 +28,69 @@ class Particle():
 
 
 class Car(Particle):
-    def __init__(self,x,y,vector: Vec2, display,path):
+    def __init__(self,x,y, display,path, vectors=list()):
         super().__init__(x,y)
         self.img = pygame.image.load(path)
-        self.vector = vector
+
+        self.vectors = vectors
+        self.vector = Vec2()
         self.display = display
         self.show()
 
     def __str__(self):
-        return("pos ({},{}) vec ({},{})".format(self.x,self.y,self.vector.x,self.vector.y))
-    def force(self,forceVector):
-        self.vector += forceVector
+        return "pos ({},{}) vec ({},{})".format(self.x,self.y,self.vector.x,self.vector.y)
+
+    def force(self, forceVector):
+        self.vectors.append(forceVector)
 
     def move(self):
-        self.x,self.y = self+(self.vector/self.vector.length())
+        if self.vectors:
+            self.vector = reduce(lambda x,y:x+y, self.vectors)
+        if self.vector.length():
+            self.vector /= self.vector.length()
+        self.x, self.y = self+self.vector
         self.show()
 
     def show(self):
         self.display.blit(self.img,(self.x,self.y))
+        # pygame.draw.line(self.display,black,(self.x,self.y),(self.x+self.vector.x,self.y+self.vector.y),10)
 
 def game_loop():
     x = (display_width * 0.5)
     y = (display_height * 0.5)
-    x_change = 0
+    # x_change = 0
     gameExit = False
-    center = Particle(x,y)
-    car = Car(x+100,y+100,Vec2(0,0),gameDisplay,"racecar.png")
-    print(center.x,car.x)
+    center = Car(x,y,gameDisplay,"racecar.png",[])
+    print(center)
+    Orbital = Vec2(100,0)
+    car = Car(x,y-100,gameDisplay,"racecar.png",[Orbital])
+    toCenter = car.aim(center)
+    car.force(toCenter)
+    print(toCenter)
+    gameDisplay.fill(white)
     while not gameExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    x_change = -5
-                if event.key == pygame.K_RIGHT:
-                    x_change = 5
-
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    x_change = 0
-
-        car.x += x_change
-        gameDisplay.fill(white)
-        car.vector = car.aim(center)
+        #
+        #     if event.type == pygame.KEYDOWN:
+        #         if event.key == pygame.K_LEFT:
+        #             x_change = -5
+        #         if event.key == pygame.K_RIGHT:
+        #             x_change = 5
+        #
+        #     if event.type == pygame.KEYUP:
+        #         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+        #             x_change = 0
+        #
+        # car.x += x_change
+        toCenter.x, toCenter.y = car.aim(center).x, car.aim(center).y
+        Orbital.x, Orbital.y = Orbital.rotate(1)
+        center.move()
         car.move()
-        print("({},{})".format(center.x-car.x,center.y-car.y))
+        print(Orbital,toCenter)
+        # print(car.vectors,car.vector)
         car.show()
 
         pygame.display.update()
