@@ -1,6 +1,7 @@
 import pygame
 from functools import reduce
 from pygame import Vector2 as Vec2
+from copy import deepcopy
 pygame.init()
 
 display_width = 800
@@ -43,9 +44,11 @@ class Car(Particle):
     def force(self, forceVector):
         self.vectors.append(forceVector)
 
+    # def calcMove(self):
+
     def move(self):
         if self.vectors:
-            self.vector = reduce(lambda x,y:x+y, self.vectors)
+            self.vector = deepcopy(reduce(lambda x,y:x+y, self.vectors))
         if self.vector.length():
             self.vector /= self.vector.length()
         self.x, self.y = self+self.vector
@@ -53,43 +56,27 @@ class Car(Particle):
 
     def show(self):
         self.display.blit(self.img,(self.x,self.y))
-        pygame.draw.line(self.display, black, (self.x, self.y),((self.x+self.vector.x),(self.y+self.vector.y)),5)
+        # pygame.draw.line(self.display, black, (self.x, self.y),((self.x+self.vector.x),(self.y+self.vector.y)),5)
 
 def game_loop():
     x = (display_width * 0.5)
     y = (display_height * 0.5)
-    # x_change = 0
     gameExit = False
     center = Car(x,y,gameDisplay,"racecar.png",[])
-    print(center)
-    Orbital = Vec2(100,0)
-    car = Car(x,y-100,gameDisplay,"racecar.png",[Orbital])
-    toCenter = car.aim(center)
-    car.force(toCenter)
     gameDisplay.fill(white)
+    center.move()
+    Orbital = Vec2(2500,0) # Substituir por radius**2
+    car = Car(x,y-50,gameDisplay,"racecar.png",[Orbital])
+    toCenter = car.aim(center)
     while not gameExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-        #
-        #     if event.type == pygame.KEYDOWN:
-        #         if event.key == pygame.K_LEFT:
-        #             x_change = -5
-        #         if event.key == pygame.K_RIGHT:
-        #             x_change = 5
-        #
-        #     if event.type == pygame.KEYUP:
-        #         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-        #             x_change = 0
-        #
-        # car.x += x_change
-        gameDisplay.fill(white)
+
         toCenter.x, toCenter.y = car.aim(center).x, car.aim(center).y
-        Orbital.x, Orbital.y = Orbital.rotate(1)
-        center.move()
+        Orbital.x, Orbital.y = Orbital+toCenter
         car.move()
-        car.show()
         pygame.display.update()
         clock.tick(60)
 
